@@ -69,6 +69,27 @@ function move(direction){
         renderGrid();
         moved=true;
     }
+    let touchStartX = 0;
+let touchStartY = 0;
+const threshold = 30; // distance minimale pour considérer un swipe
+
+document.addEventListener('touchstart', e => {
+    touchStartX = e.changedTouches[0].screenX;
+    touchStartY = e.changedTouches[0].screenY;
+});
+
+document.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].screenX - touchStartX;
+    const dy = e.changedTouches[0].screenY - touchStartY;
+
+    if(Math.abs(dx) > Math.abs(dy)){
+        if(dx > threshold) move('right');
+        else if(dx < -threshold) move('left');
+    } else {
+        if(dy > threshold) move('down');
+        else if(dy < -threshold) move('up');
+    }
+});
 
     if(checkGameOver()) alert('Game Over !');
     return moved;
