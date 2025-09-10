@@ -1,0 +1,1 @@
+// JS jeu 2048 simplifié, tu pourras compléter avec la logique complète
