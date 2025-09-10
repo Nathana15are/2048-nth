@@ -1,5 +1,8 @@
+// -------------------------
+// CONFIG UTILISATEUR
+// -------------------------
+let currentUser = JSON.parse(localStorage.getItem('currentUser')) || {pseudo:'Guest', highscore:0};
 const sheetDBScores = 'https://sheetdb.io/api/v1/p7fydq5tsp2br';
-const currentUser = JSON.parse(localStorage.getItem('currentUser')) || {pseudo:'Guest', highscore:0};
 
 let gridSize = 4, grid = [], score = 0;
 const scoreEl = document.getElementById('score'), gridContainer = document.querySelector('.grid');
@@ -7,7 +10,9 @@ const scoreEl = document.getElementById('score'), gridContainer = document.query
 // Bloquer scroll mobile
 document.body.addEventListener('touchmove', e => { e.preventDefault(); }, {passive:false});
 
-// Initialisation
+// -------------------------
+// INITIALISATION GRILLE
+// -------------------------
 function initGrid() {
     grid = Array(gridSize).fill().map(() => Array(gridSize).fill(0));
     addTile();
@@ -40,7 +45,9 @@ function renderGrid() {
     scoreEl.textContent = score;
 }
 
-// Déplacements
+// -------------------------
+// LOGIQUE DE DÉPLACEMENT
+// -------------------------
 function move(direction){
     function slide(row){
         let arr = row.filter(v=>v!==0);
@@ -84,7 +91,9 @@ function checkGameOver(){
     return true;
 }
 
-// Contrôles clavier
+// -------------------------
+// CONTROLES CLAVIER
+// -------------------------
 document.addEventListener('keydown', e=>{
     if(e.key==='ArrowUp') move('up');
     else if(e.key==='ArrowDown') move('down');
@@ -92,7 +101,9 @@ document.addEventListener('keydown', e=>{
     else if(e.key==='ArrowRight') move('right');
 });
 
-// Swipe mobile
+// -------------------------
+// SWIPE MOBILE
+// -------------------------
 let touchStartX=0, touchStartY=0, threshold=30;
 document.addEventListener('touchstart', e=>{
     touchStartX=e.changedTouches[0].screenX;
@@ -110,47 +121,74 @@ document.addEventListener('touchend', e=>{
     }
 });
 
-// Bouton Nouvelle Partie
+// -------------------------
+// BOUTON NOUVELLE PARTIE
+// -------------------------
 document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('new-game').addEventListener('click', () => {
         score = 0;
         initGrid();
         scoreEl.textContent = score;
     });
+
+    // -------------------------
+    // BOUTON PARTAGER
+    // -------------------------
+    const shareBtn = document.getElementById('share-btn');
+    shareBtn.addEventListener('click', async () => {
+        const url = "https://2048-nth2.netlify.app/";
+        const message = `J'ai fait ${score} points sur 2048 ! Viens jouer avec moi ici : ${url}`;
+        
+        if (navigator.share) {
+            try { await navigator.share({ title:"2048 NTH2", text: message, url:url }); } 
+            catch(err){ alert("Partage annulé ou erreur: " + err); }
+        } else if(navigator.clipboard) {
+            try { await navigator.clipboard.writeText(message); alert("Message copié dans le presse-papier !"); } 
+            catch(err){ alert("Impossible de copier : "+err); }
+        } else {
+            const textArea = document.createElement("textarea");
+            textArea.value = message;
+            document.body.appendChild(textArea);
+            textArea.select();
+            try { document.execCommand('copy'); alert("Message copié dans le presse-papier !"); } 
+            catch(err){ alert("Impossible de copier : "+err); }
+            document.body.removeChild(textArea);
+        }
+    });
+
+    // -------------------------
+    // BOUTON DECONNEXION
+    // -------------------------
+    const logoutBtn = document.createElement('button');
+    logoutBtn.textContent = "Se déconnecter";
+    logoutBtn.style.marginLeft = "10px";
+    document.querySelector('.controls').appendChild(logoutBtn);
+
+    logoutBtn.addEventListener('click', () => {
+        localStorage.removeItem('currentUser');
+        alert("Déconnecté !");
+        location.reload();
+    });
 });
 
-// Bouton Partager
-document.getElementById('share-btn').addEventListener('click', async () => {
-    const url = "https://2048-nth2.netlify.app/";
-    const message = `J'ai fait ${score} points sur 2048 ! Viens jouer avec moi ici : ${url}`;
-    
-    if (navigator.share) {
-        try { await navigator.share({ title:"2048 NTH2", text: message, url:url }); } 
-        catch(err){ alert("Partage annulé ou erreur: " + err); }
-    } else if(navigator.clipboard) {
-        try { await navigator.clipboard.writeText(message); alert("Message copié dans le presse-papier !"); } 
-        catch(err){ alert("Impossible de copier : "+err); }
-    } else {
-        const textArea = document.createElement("textarea");
-        textArea.value = message;
-        document.body.appendChild(textArea);
-        textArea.select();
-        try { document.execCommand('copy'); alert("Message copié dans le presse-papier !"); } 
-        catch(err){ alert("Impossible de copier : "+err); }
-        document.body.removeChild(textArea);
-    }
-});
-
-// Envoi score
+// -------------------------
+// ENVOI SCORE AU LEADERBOARD
+// -------------------------
 async function sendScore(){
-    if(score>currentUser.highscore){
-        await fetch(sheetDBScores,{
-            method:'POST',
-            headers:{'Content-Type':'application/json'},
-            body:JSON.stringify({data:{pseudo:currentUser.pseudo, score:score}})
-        });
-        localStorage.setItem('currentUser', JSON.stringify({...currentUser, highscore:score}));
+    if(!currentUser.pseudo || currentUser.pseudo === "Guest") return; // Eviter Guest
+    await fetch(sheetDBScores,{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({ data: { pseudo: currentUser.pseudo, score: score } })
+    });
+    // Mettre à jour highscore local
+    if(score > currentUser.highscore){
+        currentUser.highscore = score;
+        localStorage.setItem('currentUser', JSON.stringify(currentUser));
     }
 }
 
+// -------------------------
+// INITIALISATION
+// -------------------------
 initGrid();
