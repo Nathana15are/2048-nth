@@ -1,5 +1,6 @@
 const sheetDBScores = 'https://sheetdb.io/api/v1/p7fydq5tsp2br';
 const currentUser = JSON.parse(localStorage.getItem('currentUser')) || {pseudo:'Guest', highscore:0};
+
 let gridSize = 4, grid = [], score = 0;
 const scoreEl = document.getElementById('score'), gridContainer = document.querySelector('.grid');
 
@@ -41,7 +42,6 @@ function renderGrid() {
 
 // Déplacements
 function move(direction){
-    let moved=false;
     function slide(row){
         let arr = row.filter(v=>v!==0);
         for(let i=0;i<arr.length-1;i++){
@@ -54,45 +54,22 @@ function move(direction){
 
     let oldGrid = JSON.stringify(grid);
 
-    if(direction==='left'){
-        grid = grid.map(row => slide(row));
-    } else if(direction==='right'){
-        grid = grid.map(row => slide(row.reverse()).reverse());
-    } else if(direction==='up'){
+    if(direction==='left') grid = grid.map(row => slide(row));
+    else if(direction==='right') grid = grid.map(row => slide(row.reverse()).reverse());
+    else if(direction==='up'){
         grid = grid[0].map((_,c)=>slide(grid.map(r=>r[c]))).map((col,r)=>col.map((val,rr)=>grid[rr][r]=val));
-    } else if(direction==='down'){
+    }
+    else if(direction==='down'){
         grid = grid[0].map((_,c)=>slide(grid.map(r=>r[c]).reverse()).reverse()).map((col,r)=>col.map((val,rr)=>grid[rr][r]=val));
     }
 
     if(JSON.stringify(grid)!==oldGrid){
         addTile();
         renderGrid();
-        moved=true;
+        sendScore();
     }
-    let touchStartX = 0;
-let touchStartY = 0;
-const threshold = 30; // distance minimale pour considérer un swipe
-
-document.addEventListener('touchstart', e => {
-    touchStartX = e.changedTouches[0].screenX;
-    touchStartY = e.changedTouches[0].screenY;
-});
-
-document.addEventListener('touchend', e => {
-    const dx = e.changedTouches[0].screenX - touchStartX;
-    const dy = e.changedTouches[0].screenY - touchStartY;
-
-    if(Math.abs(dx) > Math.abs(dy)){
-        if(dx > threshold) move('right');
-        else if(dx < -threshold) move('left');
-    } else {
-        if(dy > threshold) move('down');
-        else if(dy < -threshold) move('up');
-    }
-});
 
     if(checkGameOver()) alert('Game Over !');
-    return moved;
 }
 
 // Fin de partie
@@ -109,12 +86,28 @@ function checkGameOver(){
 
 // Contrôles clavier
 document.addEventListener('keydown', e=>{
-    let moved=false;
-    if(e.key==='ArrowUp') moved=move('up');
-    else if(e.key==='ArrowDown') moved=move('down');
-    else if(e.key==='ArrowLeft') moved=move('left');
-    else if(e.key==='ArrowRight') moved=move('right');
-    if(moved) sendScore();
+    if(e.key==='ArrowUp') move('up');
+    else if(e.key==='ArrowDown') move('down');
+    else if(e.key==='ArrowLeft') move('left');
+    else if(e.key==='ArrowRight') move('right');
+});
+
+// Swipe mobile
+let touchStartX=0, touchStartY=0, threshold=30;
+document.addEventListener('touchstart', e=>{
+    touchStartX=e.changedTouches[0].screenX;
+    touchStartY=e.changedTouches[0].screenY;
+});
+document.addEventListener('touchend', e=>{
+    const dx=e.changedTouches[0].screenX - touchStartX;
+    const dy=e.changedTouches[0].screenY - touchStartY;
+    if(Math.abs(dx)>Math.abs(dy)){
+        if(dx>threshold) move('right');
+        else if(dx<-threshold) move('left');
+    } else {
+        if(dy>threshold) move('down');
+        else if(dy<-threshold) move('up');
+    }
 });
 
 // Partage
@@ -132,14 +125,4 @@ document.getElementById('new-game').addEventListener('click', ()=>{
 
 // Envoi score
 async function sendScore(){
-    if(score>currentUser.highscore){
-        await fetch(sheetDBScores, {
-            method:'POST',
-            headers: {'Content-Type':'application/json'},
-            body: JSON.stringify({data:{pseudo:currentUser.pseudo, score:score}})
-        });
-        localStorage.setItem('currentUser', JSON.stringify({...currentUser, highscore:score}));
-    }
-}
-
-initGrid();
+   
