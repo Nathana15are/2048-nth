@@ -73,7 +73,7 @@ function move(direction){
     if(JSON.stringify(grid)!==oldGrid){
         addTile();
         renderGrid();
-        sendScore();
+        sendScore(); // Met à jour le leaderboard aussi
     }
 
     if(checkGameOver()) alert('Game Over !');
@@ -122,18 +122,17 @@ document.addEventListener('touchend', e=>{
 });
 
 // -------------------------
-// BOUTON NOUVELLE PARTIE
+// BOUTONS
 // -------------------------
 document.addEventListener('DOMContentLoaded', () => {
+    // Nouvelle partie
     document.getElementById('new-game').addEventListener('click', () => {
         score = 0;
         initGrid();
         scoreEl.textContent = score;
     });
 
-    // -------------------------
-    // BOUTON PARTAGER
-    // -------------------------
+    // Partager
     const shareBtn = document.getElementById('share-btn');
     shareBtn.addEventListener('click', async () => {
         const url = "https://2048-nth2.netlify.app/";
@@ -156,9 +155,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // -------------------------
-    // BOUTON DECONNEXION
-    // -------------------------
+    // Déconnexion
     const logoutBtn = document.createElement('button');
     logoutBtn.textContent = "Se déconnecter";
     logoutBtn.style.marginLeft = "10px";
@@ -169,23 +166,53 @@ document.addEventListener('DOMContentLoaded', () => {
         alert("Déconnecté !");
         location.reload();
     });
+
+    // Charger leaderboard au démarrage
+    loadLeaderboard();
 });
 
 // -------------------------
-// ENVOI SCORE AU LEADERBOARD
+// LEADERBOARD
+// -------------------------
+const leaderboardEl = document.getElementById('leaderboard');
+
+async function loadLeaderboard(){
+    try {
+        const res = await fetch(sheetDBScores);
+        const data = await res.json();
+        leaderboardEl.innerHTML = '';
+
+        data.sort((a,b)=>Number(b.score)-Number(a.score));
+
+        data.slice(0,10).forEach((entry,i)=>{
+            const p = document.createElement('p');
+            p.textContent = `${i+1}. ${entry.pseudo} : ${entry.score}`;
+            leaderboardEl.appendChild(p);
+        });
+    } catch(err){
+        console.error("Erreur leaderboard:", err);
+        leaderboardEl.textContent = "Impossible de charger le leaderboard.";
+    }
+}
+
+// -------------------------
+// ENVOI SCORE
 // -------------------------
 async function sendScore(){
-    if(!currentUser.pseudo || currentUser.pseudo === "Guest") return; // Eviter Guest
+    if(!currentUser.pseudo || currentUser.pseudo==='Guest') return;
+
     await fetch(sheetDBScores,{
         method:'POST',
         headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({ data: { pseudo: currentUser.pseudo, score: score } })
+        body:JSON.stringify({data:{pseudo:currentUser.pseudo, score:score}})
     });
-    // Mettre à jour highscore local
-    if(score > currentUser.highscore){
+
+    if(score>currentUser.highscore){
         currentUser.highscore = score;
         localStorage.setItem('currentUser', JSON.stringify(currentUser));
     }
+
+    loadLeaderboard(); // <-- Met à jour après chaque envoi
 }
 
 // -------------------------
