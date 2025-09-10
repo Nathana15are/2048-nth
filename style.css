@@ -1,134 +1,143 @@
-/* RESET & BASE */
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body { 
-    font-family: 'Poppins', sans-serif; 
-    background: #f0f2f5; 
-    display: flex; 
-    flex-direction: column; 
-    align-items: center; 
-    min-height: 100vh; 
+/* Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Segoe UI", Tahoma, sans-serif;
 }
 
-/* HEADER */
-header { 
-    background: #2575fc; 
-    color: white; 
-    padding: 1rem; 
-    width: 100%; 
-    text-align: center; 
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2); 
+body {
+  background: #faf8ef;
+  color: #333;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 100vh;
+  padding: 20px;
 }
 
-#score-container { 
-    margin-top: 0.5rem; 
-    font-weight: bold; 
-    font-size: 1.2rem; 
+/* Container principal */
+.container {
+  width: 100%;
+  max-width: 420px;
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+  text-align: center;
 }
 
-/* CONTAINER DU JEU */
-#game-container { 
-    display: flex; 
-    flex-direction: column; 
-    align-items: center; 
-    margin: 1rem; 
+/* Titre */
+h1 {
+  font-size: 2.2rem;
+  color: #776e65;
+  margin-bottom: 15px;
 }
 
-/* GRILLE */
-.grid { 
-    display: grid; 
-    grid-template-columns: repeat(4, 80px); 
-    grid-gap: 10px; 
-    background: #bbada0; 
-    padding: 10px; 
-    border-radius: 10px; 
+/* Score */
+.score-box {
+  background: #bbada0;
+  color: #fff;
+  padding: 10px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  font-weight: bold;
+  font-size: 1.2rem;
 }
 
-.cell { 
-    width: 80px; 
-    height: 80px; 
-    background: #cdc1b4; 
-    display: flex; 
-    justify-content: center; 
-    align-items: center; 
-    font-size: 2rem; 
-    font-weight: bold; 
-    border-radius: 5px; 
-    transition: 0.2s; 
+/* Grille */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 20px;
 }
 
-.tile { 
-    transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease; 
+.grid div {
+  width: 80px;
+  height: 80px;
+  background: #cdc1b4;
+  border-radius: 6px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #776e65;
+  transition: all 0.2s ease-in-out;
 }
 
-/* BOUTONS */
-.controls { 
-    margin-top: 1rem; 
-    display: flex; 
-    flex-wrap: wrap; 
-    justify-content: center; 
-    gap: 10px; 
+/* Contrôles */
+.controls {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 20px;
 }
 
-button { 
-    padding: 0.6rem 1.2rem; 
-    font-size: 1rem; 
-    border: none; 
-    border-radius: 5px; 
-    cursor: pointer; 
-    background: #fff; 
-    color: #2575fc; 
-    font-weight: bold; 
-    transition: 0.3s; 
+.controls button {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s;
 }
 
-button:hover { 
-    background: #e6e6e6; 
-    transform: scale(1.05); 
+#new-game {
+  background: #8f7a66;
+  color: #fff;
 }
 
-/* LEADERBOARD */
-#leaderboard-section { 
-    margin-top: 1.5rem; 
-    width: 90%; 
-    max-width: 350px; 
+#new-game:hover {
+  background: #9c8570;
 }
 
-#leaderboard { 
-    background: #fff; 
-    padding: 1rem; 
-    border-radius: 10px; 
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1); 
-    text-align: left; 
+#share-btn {
+  background: #edc22e;
+  color: #fff;
 }
 
-#leaderboard p { 
-    margin: 0.3rem 0; 
+#share-btn:hover {
+  background: #f5d76e;
 }
 
-/* INPUTS */
-input { 
-    padding: 0.5rem; 
-    margin: 0.5rem 0; 
-    border-radius: 5px; 
-    border: 1px solid #ccc; 
-    width: 80%; 
-    max-width: 300px; 
+/* Leaderboard */
+.leaderboard {
+  margin-top: 20px;
+  text-align: left;
 }
 
-/* RESPONSIVE */
-@media(max-width:500px){
-    .grid { 
-        grid-template-columns: repeat(4, 60px); 
-        grid-gap: 8px; 
-        padding: 8px; 
-    }
-    .cell { 
-        width: 60px; 
-        height: 60px; 
-        font-size: 1.5rem; 
-    }
-    button { 
-        padding: 0.5rem 1rem; 
-        font-size: 0.9rem; 
-    }
+.leaderboard h2 {
+  font-size: 1.4rem;
+  color: #776e65;
+  margin-bottom: 10px;
+}
+
+#leaderboard p {
+  background: #eee4da;
+  padding: 6px 10px;
+  border-radius: 6px;
+  margin-bottom: 5px;
+  font-size: 0.95rem;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .grid div {
+    width: 65px;
+    height: 65px;
+    font-size: 1.2rem;
+  }
+
+  h1 {
+    font-size: 1.8rem;
+  }
+
+  .controls button {
+    font-size: 0.9rem;
+    padding: 10px;
+  }
 }
