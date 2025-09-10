@@ -110,19 +110,47 @@ document.addEventListener('touchend', e=>{
     }
 });
 
-// Partage
-document.getElementById('share-btn').addEventListener('click', ()=>{
-    const url = "https://2048-nth2.netlify.app/";
-    navigator.clipboard.writeText(`J'ai fait ${score} points sur 2048 ! Viens jouer avec moi ici : ${url}`);
-    alert('Message copié dans le presse-papier !');
+// Bouton Nouvelle Partie
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('new-game').addEventListener('click', () => {
+        score = 0;
+        initGrid();
+        scoreEl.textContent = score;
+    });
 });
 
-// Nouvelle partie
-document.getElementById('new-game').addEventListener('click', ()=>{
-    score=0;
-    initGrid();
+// Bouton Partager
+document.getElementById('share-btn').addEventListener('click', async () => {
+    const url = "https://2048-nth2.netlify.app/";
+    const message = `J'ai fait ${score} points sur 2048 ! Viens jouer avec moi ici : ${url}`;
+    
+    if (navigator.share) {
+        try { await navigator.share({ title:"2048 NTH2", text: message, url:url }); } 
+        catch(err){ alert("Partage annulé ou erreur: " + err); }
+    } else if(navigator.clipboard) {
+        try { await navigator.clipboard.writeText(message); alert("Message copié dans le presse-papier !"); } 
+        catch(err){ alert("Impossible de copier : "+err); }
+    } else {
+        const textArea = document.createElement("textarea");
+        textArea.value = message;
+        document.body.appendChild(textArea);
+        textArea.select();
+        try { document.execCommand('copy'); alert("Message copié dans le presse-papier !"); } 
+        catch(err){ alert("Impossible de copier : "+err); }
+        document.body.removeChild(textArea);
+    }
 });
 
 // Envoi score
 async function sendScore(){
-   
+    if(score>currentUser.highscore){
+        await fetch(sheetDBScores,{
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({data:{pseudo:currentUser.pseudo, score:score}})
+        });
+        localStorage.setItem('currentUser', JSON.stringify({...currentUser, highscore:score}));
+    }
+}
+
+initGrid();
